@@ -1,0 +1,203 @@
+we will add spring security to user microservice and configure it to accept requests only from api gateway so that http requests sent directly to the microservice are not allowed.
+the zull api gateway will also validate incoming requests for a valid authorization token.
+JWT- for generation of authorization token
+
+In Spring, we have a centralized way of handling error messages. We can create one single class and in that class we can handle any exception we want.
+@ControllerAdvice is used to register our class to listen for all exceptions. @ExceptionHandler
+
+ZUUL API GATEWAY-
+serves as a central entry point for http requests to reach our microservices.
+to forward http requests to respective microservices, also used for loadbalancing
+ZUUL is a router as well as a load balancer(because of the inbuilt ribbon load balancer)
+
+SPRING CLOUD API GATEWAY-
+alternative for Zuul api gateway.
+dependencies to include: Gateway, Eureka Discovery Client, webflux(Spring reactive web)
+
+built-in predicate factories for manual onfiguration- Lecture 66
+gateway-filters - Lecture 67
+
+EUREKA DISCOVERY SERVICE-
+Eureka helps microservices discover each other
+each instance of a microservice registers itself with eureka
+when microservices start up, they register themselves with discovery services. the API gateway will know the url of all the running microservices through the discovery services.
+it helps us to scale up or down microservices without manually configuring them.
+
+MICROSERVICES INTRO-
+microservices structures an application as a collection of loosely coupled services. It improves modularity, makes the application easier to understand, develop, scale and test.
+it is a web service.
+it is small and responsible for one thing(search, password reset,email verification etc)
+can be implemented in different programming languages, can be deployed and built independently without affecting other services.
+they communicate via http
+
+ResponseEntity- to set a different response status code
+
+DEPENDENCY INJECTION helps us to achieve independency between java classes. This will help to reuse the classes and also test them independently.
+
+to run the application using cmd-
+mvn install
+cd target
+java -jar mobile-app-ws-0.0.1-SNAPSHOT.jar
+mvn clean   (to clean the target folder)
+
+instance id is required to run several instances of the same microservice.
+
+to provide custom instance id and port from cmd-
+mvn spring-boot:run -Dspring-boot.run.arguments=--spring.application.instance_id=megha,--server.port=8011
+
+JPA- 
+to add data into the database, to persist data in the database
+without using spring data JPA, we would mst likely have to create a DAO class and then for each crud operation, we would have to create a separate method and then write business logic that would open database connection, then perform sql queries and close db connection or write java code that uses hibernate to persist data.
+
+to map UserDTO to UserEntity, use ModelMapper class
+to get access to the properties file, use Environment object
+
+SPRING CLOUD CONFIG SERVER- 
+centralized storage of configuration properties that different microservices need.
+the configurations for a microservice to be a client of config server are written in bootstrap.properties file. This file will be loaded before the application.properties file is loaded.
+
+SPRING CLOUD BUS- 
+for dynamic configuration updates while the microservices are still running.
+The updates will be broadcasted to all subscribed microservices with the help of messaging technology and the protocol used is AMQP(Advanced Message Queuing Protocol). It enables applications to connect and scale.
+It is asynchronous and it decouples applications by separating sending and receiving data. We also need to configure a message broker.
+ 
+RABBIT MQ- 
+It is a messaging broker. It is an intermediary for messaging. It gives applications a common platform for sending and receiving messages, and for messages a safe place to live until they are received. 
+
+SRING BOOT ACTUATOR- 
+It includes a number of additional features that help us to monitor and manage our applications when its running
+HTTP POST request to actuator endpoint /bus-refresh  will make the spring cloud config server to load up new conf properties from a remote git repository and it will also make the spring cloud bus to broadcast the updates to all subscribed microservices.
+/health - health check
+/beans - displays a complete list of beans in our microservice
+/httptrace - displays http trace info
+and there are many more
+
+
+
+
+
+
+
+RabbitMQ installation steps-
+Add a variable named RABBITMQ_NODENAME and set it to rabbit@localhost in the environment variables
+download and install Erlang installer
+download and install RabbitMQ installer
+open the RabbitMQ cmd and run:   set HOMEDRIVE=C:\Windows\System32\config\systemprofile
+then run:   rabbitmq-plugins.bat enable rabbitmq_management
+check the status:   rabbitmqctl status
+
+Uninstalling RabbitMQ and Erlang OTP-
+https://winshuttle-help.s3.amazonaws.com/foundation/en/uninstalling-rabbitmq-erlang.htm
+
+
+
+MySQL commands-
+show databases;
+create database photo_app;
+use photo_app;
+show tables;
+
+to create a new user-
+create user 'megha'@'localhost' identified by 'megha';
+grant all privileges on photo_app.* to 'megha'@'localhost';
+flush privileges;
+
+to switch to the new user-
+mysql -u megha -p
+
+
+
+ENCRYPTION TYPES IN SPRING CLOUD CONFIG-
+SYMMMETRIC ENCRYPTION(SHARED)- we need to come up with a unique alphanumeric string of characters which will be used as encryption key(in bootstrap.properties file). 
+This same key will then be used to encrypt and decrypt information.
+
+ASYMMETRIC ENCRYPTION(RSA KEYPAIR)- It requires us to use a java command line utility called keytool. We use keytool to generate a password protected keystore file.
+It will contain a private and a public key which will be used for encryption and decryption of info. Encryption will be done with the public key.
+to generate the keystore file-
+keytool -genkeypair -alias apiEncryptionKey -keyalg RSA \ 
+-dname "CN=Megha Jalan,OU=API Development,O=appsdeveloperblog.com,L=Ottawa,S=ON,C=CA"\
+-keypass sd4h7g9gf -keystore apiEncryptionKey.jks -storepass sd4h7g9gf
+ 
+ http://cob1116621.cob.apac.bosch.com:8012/encrypt
+http://cob1116621.cob.apac.bosch.com:8012/decrypt
+http://cob1116621.cob.apac.bosch.com:8012/users-ws/default
+
+
+Communication types-
+synchronous HTTP communication
+asynchronous communication over AMQP
+
+REST TEMPLATE OR FEIGN- HTTP clients that supports client side load balancing
+
+Feign is a declarative HTTP client. To create a new feign client, we need to create a new java interface and then annotate it with @FeignClient.
+Feign provides us with Error Decoder using which we can access request and response objects as well. It is actually an interface.
+
+HYSTRIX CIRCUIT BREAKER- make interservices communication fault tolerant.It helps to call a fallback method to prevent failure when the destination microservice is down or not available.
+
+
+SPRING CLOUD SLEUTH AND ZIPKIN SERVER- to trace HTTP requests that take place in our microservices
+sleuth is used to add additional details to our logging info that our microservices produce. These informations are trace id and span id.
+They can be sent over to zipkin server for us to be able to see these details in a very friendly graphical UI
+
+
+
+AGGREGATING LOGS FROM DIFFERENT MICROSERVICES USING ELK(ELASTICSEARCH, LOGSTASH, KIBANA)-
+logstash- collects log files from multiple microservices and filters and transforms them as needed and then it can pass then in the next tab in the flow at which these log files will need to be indexed so that they can be searchable.
+elastic search- search engine. It will index and store the log files data centrally so that we can search the files records and analyse them.
+kibana- visual interface
+
+CONFIG FILE FOR LOGSTASH-
+input {
+file {
+	type=>"syslog"
+	path=>""
+ }
+}
+output {
+if[type] == "syslog" {	
+	elasticsearch {
+		hosts => ["localhost:9200"]
+		index => "syslog-%{+YYYY-.MM.dd}"
+	  }
+	 }	 
+	 stdout { codec => rubydebug }
+}		
+	
+URLS FOR ELASTIC SEARCH-
+http://localhost:9200/_cat
+http://localhost:9200/_cat/indices
+http://localhost:9200/users-ws-2020.06.08/_search?q=*&format&pretty
+
+
+
+Profiles help us to run our application in different environments.
+
+mvn spring-boot:run -Dspring-boot.run.arguments=--spring.profiles.active=production
+docker run -d -e "spring.profiles.active=production" meghajalan30/users-microservice
+
+
+DOWNSTREAM MICROSERVICES AND METHOD LEVEL SECURITY-
+make API gateway forward the authorization header to the downstream microservices. These microservices can then extract from authorization token, the user id,roles or authorities.
+Update the security context of these microservices.
+use method level security expresssions to perform authorization at the method level.
+
+@Secured("DELETE AUTHORITY")
+@PreAuthorize("hasAuthority('DELETE AUTHORITY') or #id == principal.userId")
+@PostAuthorize("hasRole('ADMIN') or returnObject.id == principal.userId")
+
+
+
+SOME APIS-
+8010- port of eureka
+8011- port of zuul api gateway
+http://localhost:8010   - eureka discovery service
+http://localhost:8011/users-ws/users POST - to create a user
+http://localhost:8011/users-ws/users/login POST  - to login
+http://localhost:8011/users-ws/users/1b71cbcd-e2f6-44c3-8257-fd5ec5506ddf GET  - to get user details
+
+
+
+
+
+
+
